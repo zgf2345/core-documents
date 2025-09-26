@@ -744,7 +744,8 @@ document.addEventListener('DOMContentLoaded', function() {
                  // For Office/PDF docs, we need the full, absolute, encoded URL for the viewer service.
                  const fullUrl = new URL(encodedFilePath, window.location.href).href;
                  // --- CHANGE: Switched from Microsoft Viewer to Google Viewer for better compatibility ---
-                 const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true`;
+                 // --- FIX: Removed double encoding on the full URL for Google Viewer ---
+                 const viewerUrl = `https://docs.google.com/gview?url=${fullUrl}&embedded=true`;
                  showPreview(`<iframe src="${viewerUrl}"></iframe>`);
             } else {
                 alert('不支持预览此文件类型。');
