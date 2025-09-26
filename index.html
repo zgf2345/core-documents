@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  // For Office docs, use an online viewer. This requires the file to be publicly accessible.
                  // This will not work for local files (file:///) but is kept for potential server-based deployments.
                  const fullUrl = new URL(encodedFilePath, window.location.href).href;
-                 const viewerUrl = `https://docs.google.com/gview?url=${fullUrl}&embedded=true`;
+                 const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
                  showPreview(`<iframe src="${viewerUrl}"></iframe>`);
             } else {
                 alert('不支持预览此文件类型。');
