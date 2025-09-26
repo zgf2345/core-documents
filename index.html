@@ -443,8 +443,10 @@
                 const iframe = document.createElement('iframe');
                 let src = '';
                 if (data.docType === 'word' || data.docType === 'excel') {
-                    const serverUrl = `${window.location.protocol}//${window.location.host}/`;
-                    const fileUrl = encodeURIComponent(serverUrl + data.filePath);
+                    const currentPageUrl = window.location.href;
+                    const lastSlashIndex = currentPageUrl.lastIndexOf('/');
+                    const baseUrl = currentPageUrl.substring(0, lastSlashIndex + 1);
+                    const fileUrl = encodeURIComponent(baseUrl + data.filePath);
                     src = `https://view.officeapps.live.com/op/view.aspx?src=${fileUrl}`;
                 } else { // pdf
                     src = data.filePath;
