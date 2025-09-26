@@ -716,10 +716,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const previousContent = modalBody.innerHTML;
             const filePath = event.target.dataset.filePath;
             const fileType = filePath.split('.').pop().toLowerCase();
-            const fullUrl = `${window.location.href.split('/').slice(0, -1).join('/')}/${filePath}`;
+
+            // Create a properly encoded path for use in URLs.
+            // This handles special characters like spaces, '#', '?', etc., in file and folder names.
+            const encodedFilePath = filePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
 
             if (isMobile) {
-                window.open(filePath, '_blank');
+                // On mobile, open the file directly. The browser will handle the request.
+                window.open(encodedFilePath, '_blank');
                 return;
             }
             
@@ -734,8 +738,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileType)) {
-                showPreview(`<div class="carousel"><img src="${encodeURI(filePath)}"></div>`);
+                // For images, the encoded path is used as the src.
+                showPreview(`<div class="carousel"><img src="${encodedFilePath}"></div>`);
             } else if (['pdf', 'docx', 'xlsx', 'pptx'].includes(fileType)) {
+                 // For Office/PDF docs, we need the full, absolute, encoded URL for the viewer service.
+                 const fullUrl = new URL(encodedFilePath, window.location.href).href;
                  const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
                  showPreview(`<iframe src="${officeUrl}"></iframe>`);
             } else {
