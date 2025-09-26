@@ -744,11 +744,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // For PDFs, embed directly. Most modern browsers can handle this.
                 showPreview(`<iframe src="${encodedFilePath}"></iframe>`);
             } else if (['docx', 'xlsx', 'pptx'].includes(fileType)) {
-                 // For Office docs, use an online viewer. This requires the file to be publicly accessible.
-                 // This will not work for local files (file:///) but is kept for potential server-based deployments.
-                 const fullUrl = new URL(encodedFilePath, window.location.href).href;
-                 const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
-                 showPreview(`<iframe src="${viewerUrl}"></iframe>`);
+                 // For Office docs, check if we're running locally or on a server
+                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                     // For local development, just open the file in a new tab
+                     window.open(encodedFilePath, '_blank');
+                     return;
+                 } else {
+                     // For server deployment, use online viewer
+                     const fullUrl = new URL(encodedFilePath, window.location.href).href;
+                     const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
+                     showPreview(`<iframe src="${viewerUrl}"></iframe>`);
+                 }
             } else {
                 alert('不支持预览此文件类型。');
             }
