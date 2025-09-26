@@ -154,10 +154,21 @@
             align-items: center;
             padding-bottom: 10px;
             border-bottom: 1px solid #ddd;
+            position: relative;
         }
         .modal-title {
             font-size: 1.2em;
             font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #3498db;
+            padding: 0;
         }
         .close-btn {
             color: #aaa;
@@ -398,6 +409,7 @@
 <div id="myModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
+            <button class="back-btn" style="display: none;">&larr; 返回</button>
             <span class="modal-title">文件预览</span>
             <span class="close-btn">&times;</span>
         </div>
@@ -414,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalBody = modal.querySelector('.modal-body');
     const modalTitle = modal.querySelector('.modal-title');
     const closeBtn = modal.querySelector('.close-btn');
+    const backBtn = modal.querySelector('.back-btn');
 
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
@@ -503,7 +516,11 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const openModal = () => modal.style.display = 'block';
-    const closeModal = () => modal.style.display = 'none';
+    const closeModal = () => {
+        modal.style.display = 'none';
+        backBtn.style.display = 'none';
+        backBtn.onclick = null;
+    };
 
     closeBtn.onclick = closeModal;
     window.onclick = function(event) {
@@ -522,6 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         modalTitle.textContent = data.title;
         modalBody.innerHTML = ''; 
+        backBtn.style.display = 'none';
 
         // Mobile specific handling for office documents
         if (isMobile && data.type === 'office') {
@@ -586,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const fileItem = document.createElement('li');
                         fileItem.className = 'file-list-item';
                         fileItem.textContent = getFileNameFromPath(fileName);
-                        // Correctly construct file path based on whether it's a real or virtual folder structure
+                        
                         if (data.basePath) {
                             fileItem.dataset.filePath = data.basePath + folderName + '/' + fileName;
                         } else {
@@ -623,11 +641,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.removeChild(a);
             } else {
                 const zip = new JSZip();
-                const filesToZip = [];
+                let filesToZip = [];
 
                 if (data.type === 'file-list') {
-                    Object.values(data.files).flat().forEach(file => {
-                        filesToZip.push((data.basePath || '') + file);
+                     Object.entries(data.files).forEach(([folderName, files]) => {
+                        files.forEach(fileName => {
+                            if (data.basePath) {
+                                filesToZip.push(data.basePath + folderName + '/' + fileName);
+                            } else {
+                                filesToZip.push(fileName);
+                            }
+                        });
                     });
                 } else { // image gallery
                     filesToZip.push(...data.files);
@@ -689,6 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // File list logic inside modal
         if (event.target.classList.contains('file-list-item')) {
+            const previousContent = modalBody.innerHTML;
             const filePath = event.target.dataset.filePath;
             const fileType = filePath.split('.').pop().toLowerCase();
             const fullUrl = `${window.location.href.split('/').slice(0, -1).join('/')}/${filePath}`;
@@ -697,12 +722,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.open(filePath, '_blank');
                 return;
             }
+            
+            const showPreview = (content) => {
+                modalBody.innerHTML = content;
+                backBtn.style.display = 'block';
+                backBtn.onclick = () => {
+                    modalBody.innerHTML = previousContent;
+                    backBtn.style.display = 'none';
+                    backBtn.onclick = null;
+                };
+            };
 
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileType)) {
-                modalBody.innerHTML = `<div class="carousel"><img src="${encodeURI(filePath)}"></div>`;
+                showPreview(`<div class="carousel"><img src="${encodeURI(filePath)}"></div>`);
             } else if (['pdf', 'docx', 'xlsx', 'pptx'].includes(fileType)) {
                  const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
-                 modalBody.innerHTML = `<iframe src="${officeUrl}"></iframe>`;
+                 showPreview(`<iframe src="${officeUrl}"></iframe>`);
             } else {
                 alert('不支持预览此文件类型。');
             }
