@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需补充核查的核心资料清单</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.6;
+            color: #343a40;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f8f9fa;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+        .intro-text {
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .item-list {
+            list-style-type: none;
+            padding-left: 0;
+            counter-reset: item-counter;
+        }
+        .list-item {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .list-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .item-content {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .item-content::before {
+            counter-increment: item-counter;
+            content: counter(item-counter);
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .item-text {
+            margin: 0;
+        }
+        .view-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            margin-left: 20px;
+        }
+        .view-btn:hover {
+            background-color: #0056b3;
+        }
+        .view-btn.disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .grouped-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .grouped-item .item-content {
+            padding-bottom: 10px;
+        }
+        .grouped-item .sub-item::before {
+            counter-increment: none;
+            content: "•";
+            background-color: transparent;
+            color: #6c757d;
+            font-weight: bold;
+            font-size: 1.5em;
+            line-height: 0;
+            margin-right: 16px;
+        }
+        .grouped-item .grouped-button-container {
+            text-align: center;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        .no-content-notice {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1em;
+            margin-left: 20px;
+            flex-shrink: 0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-left: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.85);
+        }
+        .modal-content-container {
+            position: relative;
+            margin: 5% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 1000px;
+            background: #fff;
+            border-radius: 8px;
+        }
+        .modal-content-container.gallery { max-width: 800px; background: transparent; }
+        .modal-content-container.document, .modal-content-container.listing { height: 85vh; }
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 35px;
+            font-weight: bold;
+            transition: 0.3s;
+            z-index: 1001;
+        }
+        .modal-content-container.gallery .close {
+            color: white;
+            top: 15px;
+            right: 35px;
+        }
+        .close:hover, .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #modal-dynamic-content {
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .slideshow-container { position: relative; height: 100%; }
+        .mySlides { display: none; height: 100%; }
+        .mySlides img { width: 100%; height: 100%; object-fit: contain; }
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -22px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.3);
+        }
+        .next { right: 0; border-radius: 3px 0 0 3px; }
+        .prev:hover, .next:hover { background-color: rgba(0,0,0,0.8); }
+
+        /* Directory Listing Styles */
+        .dir-listing-container, .preview-container {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .dir-listing-container ul { list-style: none; padding: 0; }
+        .dir-listing-container h3 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .dir-listing-container li {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        .dir-listing-container li.is-folder {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .dir-listing-container li.is-folder:hover {
+            background-color: #f9f9f9;
+        }
+        .dir-listing-container li.is-file { cursor: pointer; }
+        .dir-listing-container li.is-file:hover { background-color: #f0f0f0; }
+        .dir-listing-container li.is-folder::before { content: '📁'; margin-right: 10px; font-size: 1.2em; }
+        .dir-listing-container li.is-file::before { content: '📄'; margin-right: 10px; font-size: 1.2em; }
+        .dir-listing-container li.is-pdf::before { content: '📕'; }
+        .dir-listing-container li.is-image::before { content: '🖼️'; }
+        .dir-listing-container ul ul {
+            padding-left: 25px;
+            display: none; /* Initially hide sub-lists */
+        }
+        .dir-listing-container ul ul.expanded {
+            display: block; /* Show when expanded */
+        }
+
+        .back-btn {
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .preview-content {
+            width: 100%;
+            height: calc(100% - 50px); /* Adjust height to account for back button */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>需补充核查的核心资料清单</h1>
+    <p class="intro-text">为进一步夯实合作基础，规避潜在风险，需合作方补充提供以下核心资料供核查：</p>
+
+    <h2>（一）股权与治理结构资料</h2>
+    <ul class="item-list">
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">股权结构图（需穿透至实际控制人，明确各层级持股比例）</p></div>
+            <button class="view-btn" data-modal-type="gallery" data-files='["股权架构图1.png", "股权架构图2.png", "股权架构图3.png", "股权架构图4.png", "股权架构图5.png", "股权架构图6.png"]'>查看</button>
+        </li>
+        <li class="list-item grouped-item">
+            <div class="item-content"><p class="item-text">近三年股东会、董事会、监事会决议及完整会议纪要</p></div>
+            <div class="item-content sub-item"><p class="item-text">董事、监事、高级管理人员名单，包含姓名、职务、任期、详细简历及外部兼职情况说明</p></div>
+            <div class="item-content sub-item"><p class="item-text">股权质押、期权授予、股权代持等权益限制相关协议及登记证明</p></div>
+            <div class="grouped-button-container">
+                <button class="view-btn" data-modal-type="document" data-doc-type="word" data-file-path="深圳星幻动网络科技有限公司章程.docx">查看</button>
+            </div>
+        </li>
+    </ul>
+
+    <h2>（二）财务相关资料</h2>
+    <ul class="item-list">
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">近三年经第三方机构审计的财务报告（含资产负债表、利润表、现金流量表及附注）</p></div>
+            <span class="no-content-notice">无</span>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">近 6 个月月度财务报表（含资产负债表、利润表、现金流量表）</p></div>
+            <span class="no-content-notice">无</span>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">短剧项目及电商业务相关的《项目预算表》《项目进度管理表》（需明确成本构成、收益预测及时间节点）</p></div>
+            <div class="button-group">
+                <button class="view-btn" data-modal-type="document" data-doc-type="excel" data-file-path="近1-2年已完成的短剧项目清单/项目预算表.xlsx">项目预算表</button>
+                <button class="view-btn" data-modal-type="document" data-doc-type="excel" data-file-path="近1-2年已完成的短剧项目清单/海南项目进程表.xlsx">项目进度管理表</button>
+            </div>
+        </li>
+    </ul>
+
+    <h2>（三）重大合同与业务资料</h2>
+    <ul class="item-list">
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">金额超 30 万元的合同台账及原件，包括但不限于内容采购 / 制作合同、渠道合作协议、广告 / 付费业务合同、知识产权授权协</p></div>
+            <button class="view-btn" data-modal-type="gallery" data-files='["合同-1.jpg", "合同-2.jpg", "合同-3.jpg", "合同-4.jpg", "合同-5.jpg", "合同-6.jpg", "合同-7.jpg", "合同-8.jpg", "合同-9.jpg"]'>查看</button>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">近 1-2 年已完成的短剧项目清单（含项目名称、上线时间、播放量、营收数据等）</p></div>
+            <button class="view-btn" data-modal-type="document" data-doc-type="excel" data-file-path="近1-2年已完成的短剧项目清单/8部首发试看链接文件.xlsx">查看</button>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">短剧项目基础资料，涵盖剧本创作委托合同、拍摄服务委托合同等核心协议，及拍摄设备自有 / 租赁清单与相关合同</p></div>
+            <button class="view-btn" data-modal-type="listing" data-directory-id="shortDramaBasic">查看</button>
+        </li>
+    </ul>
+
+    <h2>（四）资质与合规文件</h2>
+    <ul class="item-list">
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">营业执照、广播电视节目制作经营许可证、网络文化经营许可证（若涉及线上传播）等核心证照原件及有效期证明</p></div>
+            <button class="view-btn" data-modal-type="gallery" data-files='["近1-2年已完成的短剧项目清单/广播电视节目制作经营.jpg", "近1-2年已完成的短剧项目清单/营业执照.jpg"]'>查看</button>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">近三年完税证明、海外税务登记文件、外汇结算备案资料</p></div>
+            <button class="view-btn" data-modal-type="listing" data-directory-id="taxCertificates">查看</button>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">税务筹划说明（如适用国际税收协定，需明确协定条款及应用情况）</p></div>
+            <button class="view-btn disabled">查看</button>
+        </li>
+        <li class="list-item">
+            <div class="item-content"><p class="item-text">担保证明文件（若存在股东担保，需提供房产、土地使用权、股权等担保财产的权属证明及担保协议）</p></div>
+            <button class="view-btn" data-modal-type="gallery" data-files='["不动产1.jpg", "不动产2.jpg"]'>查看</button>
+        </li>
+    </ul>
+
+    <footer>
+        <p>文档生成于 <span id="generation-date"></span></p>
+    </footer>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <div id="modal-content-container" class="modal-content-container">
+        <span class="close">&times;</span>
+        <div id="modal-dynamic-content"></div>
+      </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('generation-date').textContent = new Date().toLocaleDateString();
+        
+        const modal = document.getElementById("myModal");
+        const modalContentContainer = document.getElementById("modal-content-container");
+        const modalDynamicContent = document.getElementById("modal-dynamic-content");
+        const closeBtn = modalContentContainer.querySelector(".close");
+
+        const allDirectoryData = {
+            "shortDramaBasic": {
+                basePath: "短剧项目基础资料",
+                contents: {
+                    "合作协议": [
+                        "合作协议1.jpg",
+                        "合作协议2.jpg",
+                        "合作协议3.jpg"
+                    ],
+                    "剧本创作": [
+                        "《My Erotic Phone Companion》一卡剧本.pdf",
+                        "她才是那个女孩0818(3).pdf",
+                        "一卡中文剧本-Sorry,+but+I'm+with+Your+Dad.pdf"
+                    ],
+                    "设备清单": [
+                        "设备清单.jpg"
+                    ]
+                }
+            },
+            "taxCertificates": {
+                basePath: "", // Root directory
+                contents: {
+                    "财税文件": [
+                        "深圳星幻动网络科技有限公司2024年完税证明.pdf",
+                        "深圳星幻动网络科技有限公司2025年完税证明.pdf",
+                        "AirwallexGlobalAccountConfirmation(1).pdf"
+                    ]
+                }
+            }
+        };
+        
+        const openModal = () => modal.style.display = "block";
+        const closeModal = () => {
+            modal.style.display = "none";
+            modalDynamicContent.innerHTML = '';
+        };
+        closeBtn.onclick = closeModal;
+        window.onclick = (event) => { if (event.target == modal) closeModal(); };
+
+        const renderModalContent = (type, data) => {
+            modalDynamicContent.innerHTML = '';
+            modalContentContainer.className = 'modal-content-container'; // Reset class
+
+            if (type === 'gallery') {
+                modalContentContainer.classList.add('gallery');
+                const slideshow = document.createElement('div');
+                slideshow.className = 'slideshow-container';
+                
+                const slides = data.files.map(file => {
+                    const slideDiv = document.createElement('div');
+                    slideDiv.className = 'mySlides';
+                    const img = document.createElement('img');
+                    img.src = file;
+                    slideDiv.appendChild(img);
+                    slideshow.appendChild(slideDiv);
+                    return slideDiv;
+                });
+
+                const prevBtn = document.createElement('a');
+                prevBtn.className = 'prev';
+                prevBtn.innerHTML = '&#10094;';
+                const nextBtn = document.createElement('a');
+                nextBtn.className = 'next';
+                nextBtn.innerHTML = '&#10095;';
+
+                let slideIndex = 1;
+                const showSlides = (n) => {
+                    if (n > slides.length) slideIndex = 1;
+                    if (n < 1) slideIndex = slides.length;
+                    slides.forEach(slide => slide.style.display = "none");
+                    slides[slideIndex - 1].style.display = "block";
+                };
+                prevBtn.onclick = () => showSlides(slideIndex += -1);
+                nextBtn.onclick = () => showSlides(slideIndex += 1);
+                
+                slideshow.appendChild(prevBtn);
+                slideshow.appendChild(nextBtn);
+                modalDynamicContent.appendChild(slideshow);
+                showSlides(slideIndex);
+
+            } else if (type === 'document') {
+                modalContentContainer.classList.add('document');
+                const iframe = document.createElement('iframe');
+                let src = '';
+                if (data.docType === 'word' || data.docType === 'excel') {
+                    const serverUrl = `${window.location.protocol}//${window.location.host}/`;
+                    const fileUrl = encodeURIComponent(serverUrl + data.filePath);
+                    src = `https://view.officeapps.live.com/op/view.aspx?src=${fileUrl}`;
+                } else { // pdf
+                    src = data.filePath;
+                }
+                iframe.src = src;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.frameBorder = '0';
+                modalDynamicContent.appendChild(iframe);
+
+            } else if (type === 'listing') {
+                modalContentContainer.classList.add('listing');
+                const dirData = allDirectoryData[data.directoryId];
+                const listingContainer = document.createElement('div');
+                listingContainer.className = 'dir-listing-container';
+                listingContainer.innerHTML = `<h3>${dirData.basePath || '文件列表'}</h3>`;
+                
+                const ul = document.createElement('ul');
+                for (const folder in dirData.contents) {
+                    const folderLi = document.createElement('li');
+                    folderLi.textContent = folder;
+                    folderLi.classList.add('is-folder');
+                    ul.appendChild(folderLi);
+                    
+                    const innerUl = document.createElement('ul');
+                    folderLi.appendChild(innerUl);
+
+                    if (dirData.contents[folder].length > 0) {
+                        folderLi.addEventListener('click', (e) => {
+                            if (e.target === folderLi) {
+                                innerUl.classList.toggle('expanded');
+                            }
+                        });
+
+                        dirData.contents[folder].forEach(fileName => {
+                            const fileLi = document.createElement('li');
+                            fileLi.textContent = fileName;
+                            fileLi.className = 'is-file';
+                            const fullPath = [dirData.basePath, folder, fileName].filter(p => p).join('/');
+                            const ext = fileName.split('.').pop().toLowerCase();
+
+                            if (['jpg', 'png', 'gif'].includes(ext)) fileLi.classList.add('is-image');
+                            else if (ext === 'pdf') fileLi.classList.add('is-pdf');
+                            
+                            fileLi.addEventListener('click', () => {
+                                const previewType = ['jpg', 'png', 'gif'].includes(ext) ? 'image' : (ext === 'pdf' ? 'pdf' : null);
+                                if (previewType) {
+                                    renderModalContent('preview', {
+                                        docType: previewType,
+                                        filePath: fullPath,
+                                        backContext: { type: 'listing', data: { directoryId: data.directoryId } }
+                                    });
+                                } else {
+                                    alert('This file type cannot be previewed.');
+                                }
+                            });
+                            innerUl.appendChild(fileLi);
+                        });
+                    }
+                }
+                listingContainer.appendChild(ul);
+                modalDynamicContent.appendChild(listingContainer);
+
+            } else if (type === 'preview') {
+                modalContentContainer.classList.add('document');
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'preview-container';
+
+                const backBtn = document.createElement('button');
+                backBtn.textContent = '← 返回列表';
+                backBtn.className = 'back-btn';
+                backBtn.onclick = () => renderModalContent(data.backContext.type, data.backContext.data);
+                previewContainer.appendChild(backBtn);
+
+                const content = document.createElement('div');
+                content.className = 'preview-content';
+                
+                if (data.docType === 'image') {
+                    const img = document.createElement('img');
+                    img.src = data.filePath;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    content.appendChild(img);
+                } else { // pdf
+                    const iframe = document.createElement('iframe');
+                    iframe.src = data.filePath;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.frameBorder = '0';
+                    content.appendChild(iframe);
+                }
+                previewContainer.appendChild(content);
+                modalDynamicContent.appendChild(previewContainer);
+            }
+        };
+
+        document.querySelectorAll('.view-btn').forEach(button => {
+            if (button.classList.contains('disabled')) return;
+            button.addEventListener('click', () => {
+                const { modalType, files, docType, filePath, directoryId } = button.dataset;
+                renderModalContent(modalType, { 
+                    files: files ? JSON.parse(files) : null,
+                    docType, 
+                    filePath, 
+                    directoryId 
+                });
+                openModal();
+            });
+        });
+    });
+    </script>
+
+</body>
+</html>
