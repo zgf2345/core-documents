@@ -743,8 +743,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (['pdf', 'docx', 'xlsx', 'pptx'].includes(fileType)) {
                  // For Office/PDF docs, we need the full, absolute, encoded URL for the viewer service.
                  const fullUrl = new URL(encodedFilePath, window.location.href).href;
-                 const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
-                 showPreview(`<iframe src="${officeUrl}"></iframe>`);
+                 // --- CHANGE: Switched from Microsoft Viewer to Google Viewer for better compatibility ---
+                 const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true`;
+                 showPreview(`<iframe src="${viewerUrl}"></iframe>`);
             } else {
                 alert('不支持预览此文件类型。');
             }
