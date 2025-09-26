@@ -397,6 +397,8 @@
         closeBtn.onclick = closeModal;
         window.onclick = (event) => { if (event.target == modal) closeModal(); };
 
+        const isMobileDevice = () => /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
         const renderModalContent = (type, data) => {
             modalDynamicContent.innerHTML = '';
             modalContentContainer.className = 'modal-content-container'; // Reset class
@@ -439,15 +441,22 @@
                 showSlides(slideIndex);
 
             } else if (type === 'document') {
+                const currentPageUrl = window.location.href;
+                const lastSlashIndex = currentPageUrl.lastIndexOf('/');
+                const baseUrl = currentPageUrl.substring(0, lastSlashIndex + 1);
+                const fileUrl = baseUrl + data.filePath;
+
+                if (isMobileDevice() && (data.docType === 'word' || data.docType === 'excel')) {
+                    window.open(fileUrl, '_blank');
+                    return; // On mobile, open Office docs in new tab and skip modal
+                }
+                
                 modalContentContainer.classList.add('document');
                 const iframe = document.createElement('iframe');
                 let src = '';
                 if (data.docType === 'word' || data.docType === 'excel') {
-                    const currentPageUrl = window.location.href;
-                    const lastSlashIndex = currentPageUrl.lastIndexOf('/');
-                    const baseUrl = currentPageUrl.substring(0, lastSlashIndex + 1);
-                    const fileUrl = encodeURIComponent(baseUrl + data.filePath);
-                    src = `https://view.officeapps.live.com/op/view.aspx?src=${fileUrl}`;
+                    const encodedFileUrl = encodeURIComponent(fileUrl);
+                    src = `https://view.officeapps.live.com/op/view.aspx?src=${encodedFileUrl}`;
                 } else { // pdf
                     src = data.filePath;
                 }
@@ -456,6 +465,7 @@
                 iframe.style.height = '100%';
                 iframe.frameBorder = '0';
                 modalDynamicContent.appendChild(iframe);
+                openModal();
 
             } else if (type === 'listing') {
                 modalContentContainer.classList.add('listing');
@@ -548,13 +558,21 @@
             if (button.classList.contains('disabled')) return;
             button.addEventListener('click', () => {
                 const { modalType, files, docType, filePath, directoryId } = button.dataset;
-                renderModalContent(modalType, { 
+                const data = { 
                     files: files ? JSON.parse(files) : null,
                     docType, 
                     filePath, 
                     directoryId 
-                });
-                openModal();
+                };
+
+                // For document types, the rendering function handles the mobile logic and modal opening.
+                if (modalType === 'document') {
+                    renderModalContent(modalType, data);
+                } else {
+                    // For other types, open modal first, then render content.
+                    renderModalContent(modalType, data);
+                    openModal();
+                }
             });
         });
     });
