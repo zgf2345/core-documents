@@ -467,7 +467,11 @@ document.addEventListener('DOMContentLoaded', function() {
             basePath: '短剧项目基础资料/',
             files: {
                 "合作协议": ["合作协议1.jpg", "合作协议2.jpg", "合作协议3.jpg"],
-                "剧本创作": ["《My Erotic Phone Companion》一卡剧本.pdf", "她才是那个白月光.pdf"],
+                "剧本创作": [
+                    "《My Erotic Phone Companion》一卡剧本.pdf",
+                    "她才是那个女孩0818(3).pdf",
+                    "一卡中文剧本-Sorry,+but+I'm+with+Your+Dad.pdf"
+                ],
                 "设备清单": ["设备清单.jpg"]
             }
         },
@@ -539,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 carousel.className = 'carousel';
                 const img = document.createElement('img');
                 
-                const updateImage = () => img.src = data.files[currentIndex];
+                const updateImage = () => img.src = encodeURI(data.files[currentIndex]);
 
                 carousel.appendChild(img);
 
@@ -582,7 +586,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         const fileItem = document.createElement('li');
                         fileItem.className = 'file-list-item';
                         fileItem.textContent = getFileNameFromPath(fileName);
-                        fileItem.dataset.filePath = (data.basePath || '') + fileName;
+                        // Correctly construct file path based on whether it's a real or virtual folder structure
+                        if (data.basePath) {
+                            fileItem.dataset.filePath = data.basePath + folderName + '/' + fileName;
+                        } else {
+                            fileItem.dataset.filePath = fileName;
+                        }
                         subList.appendChild(fileItem);
                     });
                     listContainer.appendChild(subList);
@@ -690,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileType)) {
-                modalBody.innerHTML = `<div class="carousel"><img src="${filePath}"></div>`;
+                modalBody.innerHTML = `<div class="carousel"><img src="${encodeURI(filePath)}"></div>`;
             } else if (['pdf', 'docx', 'xlsx', 'pptx'].includes(fileType)) {
                  const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fullUrl)}`;
                  modalBody.innerHTML = `<iframe src="${officeUrl}"></iframe>`;
