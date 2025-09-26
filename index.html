@@ -361,6 +361,7 @@
         const allDirectoryData = {
             "shortDramaBasic": {
                 basePath: "短剧项目基础资料",
+                virtualFolders: false,
                 contents: {
                     "合作协议": [
                         "合作协议1.jpg",
@@ -379,6 +380,7 @@
             },
             "taxCertificates": {
                 basePath: "", // Root directory
+                virtualFolders: true,
                 contents: {
                     "财税文件": [
                         "深圳星幻动网络科技有限公司2024年完税证明.pdf",
@@ -495,7 +497,11 @@
                             const fileLi = document.createElement('li');
                             fileLi.textContent = fileName;
                             fileLi.className = 'is-file';
-                            const fullPath = [dirData.basePath, folder, fileName].filter(p => p).join('/');
+
+                            const isVirtual = dirData.virtualFolders || false;
+                            const pathParts = isVirtual ? [dirData.basePath, fileName] : [dirData.basePath, folder, fileName];
+                            const fullPath = pathParts.filter(p => p).join('/');
+                            
                             const ext = fileName.split('.').pop().toLowerCase();
 
                             if (['jpg', 'png', 'gif'].includes(ext)) fileLi.classList.add('is-image');
